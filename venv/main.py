@@ -4,38 +4,43 @@ from pyfiglet import Figlet
 import folium
 
 
-def get_info_by_ip(ip='127.0.0.1'):
-    try:
-        response = requests.get(url=f"http://ip-api.com/json/{ip}").json()
-        pprint(response)
+class MapIpSearcher:
+    def __init__(self, ip='127.0.0.1'):
+        self.ip = ip
 
-        data = {
-            'IP': response.get('query'),
-            'Coutry': response.get('country'),
-            'Region': response.get('regionName'),
-            'City': response.get('city'),
-            'Provider': response.get('isp'),
-            'Lat': response.get('lat'),
-            'Lon': response.get('lon')
-        }
+    def get_info_by_ip(self):
+        try:
+            response = requests.get(url=f"http://ip-api.com/json/{self.ip}").json()
+            pprint(response)
 
-        for k, v in data.items():
-            print(f"{k} : {v}")
+            data = {
+                'IP': response.get('query'),
+                'Coutry': response.get('country'),
+                'Region': response.get('regionName'),
+                'City': response.get('city'),
+                'Provider': response.get('isp'),
+                'Lat': response.get('lat'),
+                'Lon': response.get('lon')
+            }
 
-        area = folium.Map(location=[data['Lat'], data['Lon']])
-        area.save(f"{data['IP']}_{data['City']}.html")
+            for k, v in data.items():
+                print(f"{k} : {v}")
 
-    except requests.exceptions.ConnectionError:
-        print("[!] -------- Please, check your connection!")
+            area = folium.Map(location=[data['Lat'], data['Lon']])
+            folium.CircleMarker(location=[data['Lat'], data['Lon']], radius=5).add_to(area)
+            area.save(f"{data['IP']}_{data['City']}.html")
 
+        except requests.exceptions.ConnectionError:
+            print("[!] -------- Please, check your connection!")
 
-def main():
-    preview_text = Figlet(font='slant')
-    print(preview_text.renderText("IP INFO"))
-    ip = input('Please, enter a target IP: ')
+    def main(self):
+        preview_text = Figlet(font='slant')
+        print(preview_text.renderText("IP INFO ON THE MAP!"))
+        ip = input('Please, enter a target IP: ')
 
-    get_info_by_ip(ip=ip)
+        MapIpSearcher.get_info_by_ip(MapIpSearcher(ip=ip))
 
 
 if __name__ == '__main__':
-    main()
+    map_ip_object = MapIpSearcher()
+    map_ip_object.main()
